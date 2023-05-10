@@ -45,31 +45,38 @@ TEST(ReferenceTypeTests, CompoundTypeTest)
 	ASSERT_EQ(customStruct.value, 11);
 }
 
-TEST(MemoryFragmentationTest, AllocateAndFree) {
-	for (int i = 0; i < 1000; i++) {
-		int* p = new int;
-		EXPECT_TRUE(p != nullptr); 
-		delete p;
-	}
-}
+TEST(MemoryFragmentationTests, MemoryFragmentationTest)
+{
+    const long long chunkSize = 1024 * 1024;
+    char* mem[100];
 
-TEST(MemoryFragmentationTest, AllocateAndFreeArray) {
-	for (int i = 0; i < 1000; i++) {
-		int* p = new int[10];
-		EXPECT_TRUE(p != nullptr); 
-		delete[] p;
-	}
-}
+    
+    for (int i = 0; i < 100; ++i) {
+        mem[i] = new char[chunkSize];
+    }
 
-TEST(MemoryFragmentationTest, AllocateAndFreeRandomSizes) {
-	int sizes[1000];
-	for (int i = 0; i < 1000; i++) {
-		sizes[i] = rand() % 100 + 1; 
-	}
+    
+    for (int i = 0; i < 100; i += 2) {
+        delete[] mem[i];
+        mem[i] = nullptr;
+        
+    }
 
-	for (int i = 0; i < 1000; i++) {
-		int* p = new int[sizes[i]];
-		EXPECT_TRUE(p != nullptr);
-		delete[] p;
-	}
+    
+    for (int i = 0; i < 100; i += 2) {
+        mem[i] = new (std::nothrow) char[chunkSize * chunkSize];
+        EXPECT_TRUE(mem[i] == nullptr);
+        if (mem[i] == nullptr) 
+        {
+            EXPECT_TRUE(true);
+        }
+        else {
+            EXPECT_TRUE(false);
+        }
+    }
+
+    
+    for (int i = 0; i < 100; i++) {
+        delete[] mem[i];
+    }
 }
